@@ -1,11 +1,10 @@
 import folium
-import json
 
-from django.http import HttpResponseNotFound
 from django.shortcuts import render
-from .models import PokemonEntity, Pokemon
+from .models import PokemonEntity
 from django.utils import timezone
 from django.urls import reverse
+from django.shortcuts import get_object_or_404
 
 
 
@@ -60,10 +59,7 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    try:
-        pokemon_entity = PokemonEntity.objects.get(pk=pokemon_id)
-    except PokemonEntity.DoesNotExist:
-        return HttpResponseNotFound('<h1>ДАННОГО ПОКЕМОНА НЕ НАЙДЕННО</h1>')
+    pokemon_entity = get_object_or_404(PokemonEntity, pk=pokemon_id)
 
     folium_map = folium.Map(location=[pokemon_entity.lat, pokemon_entity.lon], zoom_start=13)
     folium.Marker([pokemon_entity.lat, pokemon_entity.lon], popup=pokemon_entity.pokemon.title_ru).add_to(folium_map)
@@ -77,17 +73,13 @@ def show_pokemon(request, pokemon_id):
     }
 
     evolution_info = {}
-
-    # Проверяем, есть ли предыдущая эволюция
-    if pokemon_entity.pokemon.evolutions.exists():
-        previous_evolution = pokemon_entity.pokemon.evolutions.first()
+    previous_evolution = pokemon_entity.pokemon.evolutions.first()
+    if previous_evolution:
         evolution_info['previous_evolution'] = {
             'title_ru': previous_evolution.title_ru,
             'img_url': request.build_absolute_uri(previous_evolution.image.url),
             'url': reverse('pokemon', args=[previous_evolution.id]),
         }
-
-    # Проверяем, есть ли следующая эволюция
     if pokemon_entity.pokemon.next_evolution:
         next_evolution = pokemon_entity.pokemon.next_evolution
         evolution_info['next_evolution'] = {
