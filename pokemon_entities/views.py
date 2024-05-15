@@ -88,8 +88,8 @@ def show_pokemon(request, pokemon_id):
         }
 
     # Проверяем, есть ли следующая эволюция
-    if pokemon_entity.pokemon.evolution:
-        next_evolution = pokemon_entity.pokemon.evolution
+    if pokemon_entity.pokemon.next_evolution:
+        next_evolution = pokemon_entity.pokemon.next_evolution
         evolution_info['next_evolution'] = {
             'title_ru': next_evolution.title_ru,
             'img_url': request.build_absolute_uri(next_evolution.image.url),
