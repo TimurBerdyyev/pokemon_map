@@ -6,10 +6,12 @@ class Pokemon(models.Model):
     title_jp = models.CharField(max_length=150, null=True, verbose_name="Название на японском")
     image = models.ImageField(blank=True, verbose_name="Изображение")
     description = models.TextField(max_length=250, null=True, verbose_name="Описание")
-    next_evolution = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='evolutions', verbose_name="Эволюция")
+    next_evolution = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='evolutions', verbose_name="Следующая эволиция")
 
     def __str__(self):
-        return f'{self.title_ru}'
+        return self.title_ru
+     
+    
     
     class Meta:
         verbose_name = "Покемон"
@@ -29,7 +31,7 @@ class PokemonEntity(models.Model):
     Endurance = models.IntegerField(blank=True, null=True, verbose_name="Выносливость")
 
     def __str__(self):
-        return f'{self.pokemon}'
+        return str(self.pokemon)
     
     class Meta:
         verbose_name = "Экземпляр покемона"
