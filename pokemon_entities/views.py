@@ -3,8 +3,10 @@ import json
 
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
-from .models import PokemonEntity
+from .models import PokemonEntity, Pokemon
 from django.utils import timezone
+from django.urls import reverse
+
 
 
 MOSCOW_CENTER = [55.751244, 37.618423]
@@ -44,11 +46,11 @@ def show_all_pokemons(request):
         )
 
     pokemons_on_page = []
-    for pokemon_entitie in pokemon_entities:
+    for pokemon_entity in pokemon_entities:
         pokemons_on_page.append({
-            'pokemon_id': pokemon_entitie.pokemon.id,
-            'img_url': request.build_absolute_uri(pokemon_entitie.pokemon.image.url),
-            'title_ru': pokemon_entitie.pokemon.title_ru
+            'pokemon_id': pokemon_entity.pokemon.id,
+            'img_url': request.build_absolute_uri(pokemon_entity.pokemon.image.url),
+            'title_ru': pokemon_entity.pokemon.title_ru
         })
 
     return render(request, 'mainpage.html', context={
@@ -59,18 +61,12 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     try:
-        pokemon_entity = PokemonEntity.objects.filter(pokemon_id=pokemon_id).first()
-        if not pokemon_entity:
-            return PokemonEntity.DoesNotExist
+        pokemon_entity = PokemonEntity.objects.get(pk=pokemon_id)
     except PokemonEntity.DoesNotExist:
-        return HttpResponseNotFound('<h1> ДАННОГО ПОКЕМОНА НЕ НАЙДЕННО </h1>')
-    
-    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=13)
-    add_pokemon(
-        folium_map, pokemon_entity.lat,
-        pokemon_entity.lon,
-        request.build_absolute_uri(pokemon_entity.pokemon.image.url)
-    )
+        return HttpResponseNotFound('<h1>ДАННОГО ПОКЕМОНА НЕ НАЙДЕННО</h1>')
+
+    folium_map = folium.Map(location=[pokemon_entity.lat, pokemon_entity.lon], zoom_start=13)
+    folium.Marker([pokemon_entity.lat, pokemon_entity.lon], popup=pokemon_entity.pokemon.title_ru).add_to(folium_map)
 
     pokemon_info = {
         'img_url': request.build_absolute_uri(pokemon_entity.pokemon.image.url),
@@ -80,7 +76,28 @@ def show_pokemon(request, pokemon_id):
         'description': pokemon_entity.pokemon.description
     }
 
+    evolution_info = {}
+
+    # Проверяем, есть ли предыдущая эволюция
+    if pokemon_entity.pokemon.evolutions.exists():
+        previous_evolution = pokemon_entity.pokemon.evolutions.first()
+        evolution_info['previous_evolution'] = {
+            'title_ru': previous_evolution.title_ru,
+            'img_url': request.build_absolute_uri(previous_evolution.image.url),
+            'url': reverse('pokemon', args=[previous_evolution.id]),
+        }
+
+    # Проверяем, есть ли следующая эволюция
+    if pokemon_entity.pokemon.evolution:
+        next_evolution = pokemon_entity.pokemon.evolution
+        evolution_info['next_evolution'] = {
+            'title_ru': next_evolution.title_ru,
+            'img_url': request.build_absolute_uri(next_evolution.image.url),
+            'url': reverse('pokemon', args=[next_evolution.id]),
+        }
+
     return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 
-        'pokemon': pokemon_info
+        'map': folium_map._repr_html_(),
+        'pokemon': pokemon_info,
+        'evolution_info': evolution_info,
     })
