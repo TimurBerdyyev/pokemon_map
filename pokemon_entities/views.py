@@ -73,7 +73,7 @@ def show_pokemon(request, pokemon_id):
     }
 
     evolution_info = {}
-    previous_evolution = pokemon_entity.pokemon.evolutions.first()
+    previous_evolution = pokemon_entity.pokemon.previous_evolutions.first()
     if previous_evolution:
         evolution_info['previous_evolution'] = {
             'title_ru': previous_evolution.title_ru,
