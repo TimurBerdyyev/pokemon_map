@@ -15,18 +15,17 @@ DEFAULT_IMAGE_URL = (
     '&fill=transparent'
 )
 
-
-def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
+def add_pokemon(folium_map, lat, lon, popup_text, image_url=DEFAULT_IMAGE_URL):
     icon = folium.features.CustomIcon(
         image_url,
         icon_size=(50, 50),
     )
     folium.Marker(
         [lat, lon],
-        # Warning! `tooltip` attribute is disabled intentionally
-        # to fix strange folium cyrillic encoding bug
+        popup=popup_text,
         icon=icon,
     ).add_to(folium_map)
+
 
 
 def show_all_pokemons(request):
@@ -38,9 +37,18 @@ def show_all_pokemons(request):
 
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for pokemon_entity in pokemon_entities:
+        popup_text = f"""
+        <b>{pokemon_entity.pokemon.title_ru}</b><br>
+        Уровень: {pokemon_entity.level}<br>
+        Здоровье: {pokemon_entity.health}<br>
+        Атака: {pokemon_entity.attack}<br>
+        Защита: {pokemon_entity.protection}<br>
+        Выносливость: {pokemon_entity.endurance}
+        """
         add_pokemon(
             folium_map, pokemon_entity.lat,
             pokemon_entity.lon,
+            popup_text,
             request.build_absolute_uri(pokemon_entity.pokemon.image.url)
         )
 
@@ -62,7 +70,15 @@ def show_pokemon(request, pokemon_id):
     pokemon_entity = get_object_or_404(PokemonEntity, pk=pokemon_id)
 
     folium_map = folium.Map(location=[pokemon_entity.lat, pokemon_entity.lon], zoom_start=13)
-    folium.Marker([pokemon_entity.lat, pokemon_entity.lon], popup=pokemon_entity.pokemon.title_ru).add_to(folium_map)
+    popup_text = f"""
+    <b>{pokemon_entity.pokemon.title_ru}</b><br>
+    Уровень: {pokemon_entity.level}<br>
+    Здоровье: {pokemon_entity.health}<br>
+    Атака: {pokemon_entity.attack}<br>
+    Защита: {pokemon_entity.protection}<br>
+    Выносливость: {pokemon_entity.endurance}
+    """
+    folium.Marker([pokemon_entity.lat, pokemon_entity.lon], popup=popup_text).add_to(folium_map)
 
     pokemon_info = {
         'img_url': request.build_absolute_uri(pokemon_entity.pokemon.image.url),
@@ -80,8 +96,8 @@ def show_pokemon(request, pokemon_id):
             'img_url': request.build_absolute_uri(previous_evolution.image.url),
             'url': reverse('pokemon', args=[previous_evolution.id]),
         }
-    if pokemon_entity.pokemon.next_evolution:
-        next_evolution = pokemon_entity.pokemon.next_evolution
+    next_evolution = pokemon_entity.pokemon.next_evolution
+    if next_evolution:
         evolution_info['next_evolution'] = {
             'title_ru': next_evolution.title_ru,
             'img_url': request.build_absolute_uri(next_evolution.image.url),

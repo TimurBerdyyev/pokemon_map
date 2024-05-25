@@ -33,6 +33,8 @@ class Pokemon(models.Model):
         related_name='previous_evolutions',
         verbose_name="Следующая эволиция"
         )
+    
+    element_type = models.ManyToManyField(PokemonElementType, verbose_name="Стихия")
 
     def __str__(self):
         return self.title_ru
@@ -53,8 +55,7 @@ class PokemonEntity(models.Model):
     
     lat = models.FloatField(null=True, verbose_name="Широта")
     lon = models.FloatField(null=True, verbose_name="Долгота")
-    element_type = models.ManyToManyField(PokemonElementType, verbose_name="Стихия")
-
+    
     appeared_at = models.DateTimeField(null=True, verbose_name="Появился")
     disappeared_at = models.DateTimeField(null=True, verbose_name="Исчез")
     level = models.IntegerField(blank=True, null=True, verbose_name="Уровень")
