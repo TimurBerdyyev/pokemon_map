@@ -1,4 +1,12 @@
-from django.db import models  
+from django.db import models
+
+
+class PokemonElementType(models.Model):
+    title = models.CharField(max_length=100, verbose_name="Элемент стихии")
+
+    def __str__(self):
+        return self.title
+    
 
 class Pokemon(models.Model):
     title_ru = models.CharField(max_length=200, verbose_name="Название на русском")
@@ -6,13 +14,12 @@ class Pokemon(models.Model):
     title_jp = models.CharField(max_length=150, null=True, verbose_name="Название на японском")
     image = models.ImageField(blank=True, verbose_name="Изображение")
     description = models.TextField(max_length=250, null=True, verbose_name="Описание")
-    next_evolution = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='evolutions', verbose_name="Следующая эволиция")
+    next_evolution = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='previous_evolutions', verbose_name="Следующая эволиция")
+    element_type = models.ManyToManyField(PokemonElementType, verbose_name="Стихия")
 
     def __str__(self):
         return self.title_ru
      
-    
-    
     class Meta:
         verbose_name = "Покемон"
         verbose_name_plural = "Покемоны"
