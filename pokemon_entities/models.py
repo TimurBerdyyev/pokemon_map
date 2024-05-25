@@ -10,8 +10,8 @@ class PokemonElementType(models.Model):
 
 class Pokemon(models.Model):
     title_ru = models.CharField(max_length=200, verbose_name="Название на русском")
-    title_en = models.CharField(max_length=150, null=True, verbose_name="Название на английском")
-    title_jp = models.CharField(max_length=150, null=True, verbose_name="Название на японском")
+    title_en = models.CharField(max_length=150, null=True, blank=True, verbose_name="Название на английском")
+    title_jp = models.CharField(max_length=150, null=True, blank=True, verbose_name="Название на японском")
     image = models.ImageField(blank=True, verbose_name="Изображение")
     description = models.TextField(max_length=250, null=True, verbose_name="Описание")
     next_evolution = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='previous_evolutions', verbose_name="Следующая эволиция")
