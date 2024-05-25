@@ -73,16 +73,15 @@ def show_pokemon(request, pokemon_id):
     }
 
     evolution_info = {}
-    # Проверяем, есть ли предыдущая эволюция
-    previous_evolution = pokemon_entity.pokemon.previous_evolutions.first()
+    previous_evolution = pokemon_entity.pokemon.evolutions.first()
     if previous_evolution:
         evolution_info['previous_evolution'] = {
             'title_ru': previous_evolution.title_ru,
             'img_url': request.build_absolute_uri(previous_evolution.image.url),
             'url': reverse('pokemon', args=[previous_evolution.id]),
         }
-    next_evolution = pokemon_entity.pokemon.next_evolution
-    if next_evolution:
+    if pokemon_entity.pokemon.next_evolution:
+        next_evolution = pokemon_entity.pokemon.next_evolution
         evolution_info['next_evolution'] = {
             'title_ru': next_evolution.title_ru,
             'img_url': request.build_absolute_uri(next_evolution.image.url),
